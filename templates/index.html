@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SamayDent IA | Diagnóstico de Precisión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc; 
+            --card-bg: #ffffff; 
+            --primary: #00A8B5; 
+            --primary-dark: #007b85;
+            --primary-light: #e6f7f9;
+            --accent: #E84A68; 
+            --accent-light: #fce8ee;
+            --text-dark: #1a202c; 
+            --text-light: #64748b; 
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.10);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e9edf5 100%);
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-dark); padding: 20px; 
+        }
+        .container {
+            width: 100%; max-width: 480px; background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow); padding: 32px 28px; overflow: hidden; position: relative;
+            border: 1px solid rgba(255,255,255,0.5); transition: var(--transition);
+        }
+        .container:hover { box-shadow: var(--shadow-hover); }
+        @media (max-width: 480px) {
+            body { padding: 0; }
+            .container { max-width: 100%; min-height: 100vh; border-radius: 0; border: none; padding: 24px 18px; }
+        }
+        .screen { display: none; flex-direction: column; align-items: center; animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); width: 100%;}
+        .active { display: flex; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        .logo-container { margin-bottom: 5px; animation: float 4s ease-in-out infinite; }
+        .logo-aura { animation: pulse-aura 2s infinite alternate; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse-aura { 0% { filter: drop-shadow(0 0 5px rgba(0, 168, 181, 0.4)); } 100% { filter: drop-shadow(0 0 20px rgba(0, 168, 181, 0.8)); } }
+        h1 { font-weight: 700; color: var(--primary); margin-bottom: 4px; font-size: 22px; text-align: center; }
+        h1 i { color: var(--accent); margin-right: 8px; }
+        .subtitle { color: var(--text-light); font-size: 14px; margin-bottom: 24px; text-align: center; font-weight: 400; }
+        .link-acerca-login {
+            display: inline-block; margin-top: 16px; color: #2563eb; font-weight: 600; font-size: 14px; cursor: pointer;
+            transition: var(--transition); animation: latido-azul 1.8s infinite; text-decoration: none; background: transparent; border: none; padding: 0;
+        }
+        .link-acerca-login i { margin-right: 6px; color: #2563eb; }
+        .link-acerca-login:hover { transform: scale(1.05); text-shadow: 0 0 12px rgba(37,99,235,0.3); animation: none; }
+        @keyframes latido-azul { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+        .animated-title {
+            color: #2563eb !important; animation: pulse-title-text 1.5s infinite alternate ease-in-out; display: inline-block; width: 100%;
+        }
+        .animated-title i { color: #2563eb !important; }
+        @keyframes pulse-title-text {
+            0% { transform: scale(1); text-shadow: 0 0 0px rgba(37,99,235,0); }
+            100% { transform: scale(1.05); text-shadow: 0 4px 10px rgba(37,99,235,0.2); }
+        }
+        input, select {
+            width: 100%; padding: 12px 16px; margin-bottom: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 14px;
+            background-color: var(--bg-color); color: var(--text-dark);
+        }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(0,168,181,0.08); background-color: #fff; }
+        button.btn-primary {
+            width: 100%; padding: 13px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,168,181,0.2);
+        }
+        button.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,168,181,0.3); filter: brightness(1.05); }
+        button i { margin-right: 8px; }
+        .btn-secondary { background: transparent; color: var(--text-dark); border: 1.5px solid var(--border-color); box-shadow: none; margin-top: 10px; width: 100%; padding: 13px; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; cursor: pointer; }
+        .btn-secondary:hover { background: var(--bg-color); }
+        .links-container { width: 100%; display: flex; justify-content: center; margin-top: 16px; }
+        .action-link { color: var(--text-light); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+        .action-link:hover { color: var(--primary); }
+        .center-link { margin-top: 14px; text-align: center; display: block; width: 100%; }
+        .drop-zone {
+            width: 100%; min-height: 150px; border: 2px dashed var(--border-color); border-radius: var(--radius-sm);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-color: var(--bg-color); cursor: pointer; margin-bottom: 20px; padding: 20px;
+        }
+        .drop-zone:hover { background-color: var(--primary-light); border-color: var(--primary); transform: scale(1.01); }
+        .drop-zone i { font-size: 2.2rem; color: var(--primary); margin-bottom: 8px; }
+        .drop-zone:hover i { transform: translateY(-3px); }
+        .drop-zone p { color: var(--primary); font-weight: 500; font-size: 13px; }
+        .image-container {
+            width: 100%; min-height: 220px; background: var(--bg-color); border-radius: var(--radius-sm); overflow: hidden; position: relative; margin-bottom: 16px;
+            border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; cursor: default;
+        }
+        .image-container.zoomed {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; border-radius: 0; background: rgba(0,0,0,0.95); cursor: zoom-out; border: none; padding: 0;
+        }
+        .image-container.zoomed .demo-img { max-height: 95vh; max-width: 95vw; object-fit: contain; }
+        .image-container.zoomed .close-zoom { display: block !important; }
+        .image-container.zoomed .zoom-btn { display: none !important; }
+        .close-zoom {
+            display: none; position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 10000; backdrop-filter: blur(10px);
+        }
+        .close-zoom:hover { background: rgba(255,255,255,0.3); }
+        .demo-img { width: 100%; height: 100%; max-height: 300px; object-fit: contain; }
+        .detection-canvas { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: auto; z-index: 5; cursor: pointer;
+            background: transparent !important; 
+        }
+        .scanner-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            box-shadow: 0 0 20px rgba(232,74,104,0.4); animation: scan 1.8s infinite ease-in-out; z-index: 3;
+        }
+        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .blinking-text { color: var(--primary); font-weight: 500; animation: blink 1.5s infinite; margin-bottom: 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; justify-content: center;}
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .diagnosis-panel { width: 100%; background: var(--bg-color); padding: 16px; border-left: 4px solid var(--accent); border-radius: var(--radius-sm); margin-bottom: 20px; }
+        .diagnosis-panel h3 { color: var(--accent); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;}
+        .diagnosis-panel p { font-size: 13px; color: var(--text-dark); margin-bottom: 3px; line-height: 1.5; }
+        .diagnosis-panel .detalle-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 13px; }
+        .diagnosis-panel .detalle-item:last-child { border-bottom: none; }
+        .diagnosis-panel .badge { background: var(--primary); color: white; padding: 0 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .diagnosis-panel .badge-patologia { background: var(--accent); }
+        .diagnosis-panel .highlight-item { background: rgba(0,168,181,0.08); border-radius: 4px; padding: 2px 6px; }
+        .patologia-name-colored { font-weight: 600; }
+
+        /* ===== NUEVO: lista de hallazgos en 3 columnas ===== */
+        #resultados-lista {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        #resultados-lista .detalle-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 6px 8px;
+            border-bottom: none;
+            background: var(--bg-color);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            font-size: 12px;
+            gap: 2px;
+            transition: var(--transition);
+            word-break: break-word;
+            justify-content: space-between;
+        }
+
+        #resultados-lista .detalle-item .badge,
+        #resultados-lista .detalle-item .badge-patologia {
+            align-self: flex-start;
+            margin-top: 2px;
+            font-size: 10px;
+            padding: 1px 6px;
+        }
+
+        #resultados-lista .detalle-item .patologia-name-colored {
+            font-weight: 600;
+        }
+
+        #resultados-lista .detalle-item.highlight-item {
+            background: rgba(0,168,181,0.08);
+            border-color: var(--primary);
+        }
+        /* =================================================== */
+
+        .info-section { text-align: left; width: 100%; background: var(--bg-color); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 12px; border: 1px solid var(--border-color); }
+        .info-section h3 { color: var(--primary); font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;}
+        .info-section p { font-size: 13px; color: var(--text-light); line-height: 1.5; }
+        .toast {
+            visibility: hidden; min-width: 260px; background: var(--text-dark); color: #fff; text-align: center; border-radius: 30px;
+            padding: 12px 20px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+        .toast.show { visibility: visible; animation: fadein 0.4s, fadeout 0.4s 2.8s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+        .debug-log { width: 100%; background: var(--bg-color); border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-size: 11px; color: var(--text-light); border: 1px solid var(--border-color); max-height: 60px; overflow-y: auto; display: none; }
+        .debug-log.visible { display: block; }
+        .debug-log span { color: var(--primary); }
+        .user-menu { width: 100%; background: var(--bg-color); border-radius: var(--radius-sm); padding: 8px 12px; margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: relative; }
+        .user-menu .user-info-left { display: flex; align-items: center; gap: 10px; }
+        .user-menu .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
+        .user-menu .user-name { font-weight: 500; font-size: 14px; color: var(--text-dark); }
+        .user-menu .user-email { font-size: 12px; color: var(--text-light); }
+        .user-menu .menu-btn { background: none; border: none; color: var(--text-light); font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 8px; width: auto; box-shadow: none; }
+        .user-menu .menu-btn:hover { background: var(--border-color); }
+        .user-menu .dropdown-menu {
+            position: absolute; top: calc(100% + 8px); right: 0; background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm); box-shadow: var(--shadow-hover); min-width: 180px; padding: 6px 0; display: none; z-index: 100;
+        }
+        .user-menu .dropdown-menu.show { display: block; }
+        .user-menu .dropdown-menu .dropdown-item { padding: 10px 16px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); font-size: 13px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; box-shadow: none; }
+        .user-menu .dropdown-menu .dropdown-item:hover { background: var(--bg-color); }
+        .user-menu .dropdown-menu .dropdown-item.danger { color: var(--accent); }
+        .user-menu .dropdown-menu .dropdown-item.danger i { color: var(--accent); }
+        .user-menu .dropdown-menu .divider { height: 1px; background: var(--border-color); margin: 4px 12px; }
+        .model-selector { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .model-selector button { padding: 10px 8px; font-size: 12px; border-radius: var(--radius-sm); background: var(--bg-color); color: var(--text-dark); border: 1.5px solid var(--border-color); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .model-selector button i { font-size: 18px; margin-right: 0; }
+        .model-selector button .label { font-weight: 500; font-size: 11px; }
+        .model-selector button .badge-model { font-size: 9px; background: var(--border-color); padding: 1px 6px; border-radius: 10px; color: var(--text-light); }
+        .model-selector button.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,168,181,0.25); }
+        .model-selector button.active .badge-model { background: rgba(255,255,255,0.2); color: white; }
+        .model-selector button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .model-selector button.active:hover { box-shadow: 0 4px 16px rgba(0,168,181,0.35); }
+        .zoom-btn { position: absolute; bottom: 12px; right: 12px; z-index: 6; background: rgba(0,0,0,0.6); border: none; border-radius: 8px; color: white; font-size: 12px; padding: 6px 12px; backdrop-filter: blur(4px); cursor: pointer; width: auto; box-shadow: none; }
+        .zoom-btn:hover { background: rgba(0,0,0,0.8); transform: scale(1.05); }
+        .hover-tooltip { position: fixed; background: rgba(0,0,0,0.9); color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; pointer-events: none; z-index: 10001; display: none; backdrop-filter: blur(8px); border: 1px solid rgba(255,0,0,0.3); font-weight: 500; box-shadow: 0 4px 20px rgba(255,0,0,0.2); max-width: 280px; }
+        .hover-tooltip .fdi-code { color: #00FF88; font-weight: 700; }
+        .hover-tooltip .patologia-name { font-weight: 600; }
+        .resultado-modelo-tag { display: inline-block; background: var(--primary-light); color: var(--primary-dark); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; margin-bottom: 12px; }
+        .debug-counter { position: absolute; bottom: 50px; left: 12px; z-index: 10; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-family: 'Courier New', monospace; display: none; }
+        .debug-counter.visible { display: block; }
+        .debug-counter .count-pat { color: #FF4444; font-weight: bold; }
+        .uso-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+        .uso-card { background: var(--bg-color); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: center; }
+        .uso-card .icono { font-size: 24px; margin-bottom: 6px; }
+        .uso-card .titulo { font-weight: 600; font-size: 13px; color: var(--text-dark); }
+        .uso-card .descripcion { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+        .uso-card .badge-uso { display: inline-block; background: var(--primary-light); color: var(--primary-dark); padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-top: 4px; }
+        .uso-card .badge-uso.diagnostico { background: var(--accent-light); color: var(--accent); }
+        .instruccion-paso { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 13px; color: var(--text-dark); }
+        .instruccion-paso .numero { background: var(--primary); color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+        .instruccion-paso .texto { line-height: 1.5; }
+        .instruccion-paso .texto strong { color: var(--primary-dark); }
+        .instruccion-hover {
+            font-size: 13px; color: var(--text-light); background: var(--bg-color); padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 10px; text-align: center; border: 1px dashed var(--border-color); width: 100%;
+        }
+        .instruccion-hover i { color: var(--primary); margin-right: 6px; }
+        .color-swatch { display: inline-block; width: 20px; height: 20px; border-radius: 4px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); vertical-align: middle; }
+        .color-list { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 8px; }
+        .color-item { display: flex; align-items: center; font-size: 12px; }
+        .password-feedback {
+            font-size: 12px;
+            margin-top: -8px;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        .password-feedback.valid { color: #22c55e; }
+        .password-feedback.invalid { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- LOGIN -->
+        <div id="screen-login" class="screen active">
+            <div class="logo-container">
+                <svg class="logo-aura" width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00A8B5;stop-opacity:1" /><stop offset="100%" style="stop-color:#007b85;stop-opacity:1" /></linearGradient></defs>
+                    <path d="M 30 20 C 40 20, 45 30, 50 30 C 55 30, 60 20, 70 20 C 85 20, 85 45, 80 60 C 75 75, 65 90, 55 90 C 50 90, 50 75, 50 75 C 50 75, 50 90, 45 90 C 35 90, 25 75, 20 60 C 15 45, 15 20, 30 20 Z" fill="url(#grad)" />
+                    <circle cx="50" cy="45" r="6" fill="#161b22" />
+                    <path d="M 50 45 L 65 35" stroke="#161b22" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M 50 45 L 35 55" stroke="#161b22" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h1>SamayDent IA</h1>
+            <p class="subtitle">Inteligencia Artificial para Diagnóstico Dental</p>
+            <input type="email" id="login-email" placeholder="Correo Institucional" value="odontologia@samaydent.ia">
+            <input type="password" id="login-password" placeholder="Contraseña" value="123456">
+            <button class="btn-primary" onclick="login()"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
+            <span class="action-link center-link" onclick="showScreen('screen-register')">¿No tienes cuenta? Regístrate aquí</span>
+            <span class="link-acerca-login" onclick="showScreen('screen-info')">
+                <i class="fas fa-info-circle"></i> Acerca de SamayDent IA
+            </span>
+            <div class="links-container">
+                <span class="action-link" onclick="showScreen('screen-support')"><i class="fas fa-headset"></i> Soporte Técnico</span>
+            </div>
+        </div>
+
+        <!-- REGISTRO -->
+        <div id="screen-register" class="screen">
+            <div class="logo-container">
+                <svg width="60" height="60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 30 20 C 40 20, 45 30, 50 30 C 55 30, 60 20, 70 20 C 85 20, 85 45, 80 60 C 75 75, 65 90, 55 90 C 50 90, 50 75, 50 75 C 50 75, 50 90, 45 90 C 35 90, 25 75, 20 60 C 15 45, 15 20, 30 20 Z" fill="url(#grad)" />
+                </svg>
+            </div>
+            <h1>Crear Cuenta</h1>
+            <p class="subtitle">Ingresa tus datos</p>
+            <input type="text" id="reg-name" placeholder="Nombre Completo">
+            <input type="email" id="reg-email" placeholder="Correo Institucional">
+            <input type="password" id="reg-password" placeholder="Contraseña (mínimo 6 caracteres)">
+            <input type="password" id="reg-confirm-password" placeholder="Confirmar Contraseña">
+            <div id="reg-password-feedback" class="password-feedback"></div>
+            <button class="btn-primary" onclick="register()"><i class="fas fa-user-plus"></i> Registrarse</button>
+            <button class="btn-secondary" onclick="showScreen('screen-login')"><i class="fas fa-arrow-left"></i> Volver al Login</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="screen-dashboard" class="screen">
+            <div class="user-menu">
+                <div class="user-info-left">
+                    <div class="avatar" id="user-avatar">U</div>
+                    <div>
+                        <div class="user-name" id="user-name-display">Usuario</div>
+                        <div class="user-email" id="user-email-display">usuario@email.com</div>
+                    </div>
+                </div>
+                <div>
+                    <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <button class="dropdown-item" onclick="showScreen('screen-profile')"><i class="fas fa-user"></i> Mi perfil</button>
+                        <button class="dropdown-item" onclick="showScreen('screen-change-password')"><i class="fas fa-key"></i> Cambiar contraseña</button>
+                        <button class="dropdown-item" onclick="showScreen('screen-history')"><i class="fas fa-history"></i> Historial</button>
+                        <div class="divider"></div>
+                        <button class="dropdown-item danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+            <h1><i class="fas fa-x-ray"></i> Análisis Clínico</h1>
+            <p class="subtitle">Sube la panorámica del paciente</p>
+            <div class="model-selector" id="model-selector">
+                <button class="active" data-model="nomenclatura" onclick="selectModel('nomenclatura')">
+                    <i class="fas fa-sort-numeric-up"></i>
+                    <span class="label">Nomenclatura</span>
+                    <span class="badge-model">FDI</span>
+                </button>
+                <button data-model="unificado" onclick="selectModel('unificado')">
+                    <i class="fas fa-sync-alt"></i>
+                    <span class="label">Diagnóstico Unificado</span>
+                    <span class="badge-model">FDI + Patologías</span>
+                </button>
+            </div>
+            <div class="drop-zone" id="drop-container">
+                <i class="fas fa-cloud-upload-alt" id="upload-icon"></i>
+                <p id="upload-text">Toca para seleccionar imagen o arrastra el archivo aquí</p>
+                <input type="file" id="file-upload" accept="image/jpeg, image/png" style="display: none;">
+            </div>
+            <button class="btn-primary" onclick="startAnalysis()"><i class="fas fa-microscope"></i> Analizar Radiografía</button>
+            <div class="debug-log" id="debugLog">
+                <i class="fas fa-terminal"></i> <span id="debugContent">Esperando acción...</span>
+            </div>
+        </div>
+
+        <!-- ESCANEO -->
+        <div id="screen-scan" class="screen">
+            <h1><i class="fas fa-microscope"></i> Analizando</h1>
+            <p class="subtitle" id="estado-escaneo">Segmentación neuronal en curso</p>
+            <div class="image-container">
+                <img id="demo-img-scan" src="" class="demo-img" alt="Radiografía">
+                <div class="scanner-line"></div>
+            </div>
+            <p class="blinking-text" id="texto-escaneo"><i class="fas fa-circle-notch fa-spin"></i> Mapeando estructuras...</p>
+            <div class="debug-log visible" id="debugLogScan">
+                <i class="fas fa-terminal"></i> <span id="debugContentScan">Iniciando conexión...</span>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="screen-results" class="screen">
+            <h1><i class="fas fa-stethoscope"></i> Diagnóstico AI</h1>
+            <div style="text-align: center;">
+                <span class="resultado-modelo-tag" id="result-model-tag">Nomenclatura</span>
+            </div>
+
+            <div class="instruccion-hover">
+                <i class="fas fa-mouse-pointer"></i> Desliza el cursor por la imagen para ver la nomenclatura y los detalles de cada patología.
+            </div>
+
+            <div class="image-container" id="result-container">
+                <img id="vista-previa" src="" class="demo-img" alt="Radiografía">
+                <canvas id="detection-canvas" class="detection-canvas"></canvas>
+                <button class="zoom-btn" onclick="toggleZoom()">
+                    <i class="fas fa-expand"></i> Ampliar
+                </button>
+                <button class="close-zoom" id="close-zoom" onclick="toggleZoom()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="debug-counter" id="debugCounter">
+                    🔴 <span class="count-pat" id="countPatologias">0</span> patologías
+                </div>
+            </div>
+
+            <div class="diagnosis-panel">
+                <h3><i class="fas fa-list-ul"></i> Hallazgos Detectados</h3>
+                <div id="resultados-lista">
+                    <p style="color: var(--text-light); font-size: 13px;">Procesando resultados...</p>
+                </div>
+                <p id="total-detectados" style="font-size: 12px; color: var(--text-light); margin-top: 6px;"></p>
+            </div>
+            
+            <button class="btn-secondary" onclick="showScreen('screen-dashboard')"><i class="fas fa-arrow-left"></i> Nuevo Análisis</button>
+        </div>
+
+        <!-- INFO -->
+        <div id="screen-info" class="screen">
+            <h1 class="animated-title"><i class="fas fa-info-circle"></i> Acerca y Uso</h1>
+            <p class="subtitle">Información general del sistema</p>
+            <div class="info-section">
+                <h3><i class="fas fa-brain"></i> ¿Qué es SamayDent IA?</h3>
+                <p>SamayDent es una Inteligencia Artificial diseñada para detectar y clasificar las siguientes patologías orales:</p>
+                <div style="font-size: 11px; margin-top: 10px; color: var(--text-light); line-height: 1.6; background: rgba(0,0,0,0.02); padding: 8px; border-radius: 6px;">
+                    'Caries', 'Corona', 'Obturación', 'Implante', 'Diente mal alineado', 'Canal mandibular', 'Diente ausente', 'Lesión periapical', 'Raíz retenida', 'Endodoncia', 'Resto radicular', 'Diente impactado', 'Seno maxilar', 'Pérdida ósea', 'Fractura dental', 'Diente permanente', 'Supraerupción', 'Microtornillo', 'Pilar de implante', 'Atrición', 'Defecto óseo', 'Cicatrizal gingival', 'Banda metálica', 'Brackets', 'Retenedor fijo', 'Perno muñón', 'Placa de osteosíntesis', 'Alambre de ortodoncia', 'Quiste', 'Reabsorción radicular', 'Diente temporal'
+                </div>
+                <div style="margin-top:10px; font-size:12px; background: var(--bg-color); padding: 10px; border-radius: 6px;">
+                    <strong>Todas las patologías y sus colores:</strong>
+                    <div class="color-list" id="color-sample-list"></div>
+                </div>
+            </div>
+            <div class="info-section">
+                <h3><i class="fas fa-list-ol"></i> Modos de Análisis</h3>
+                <div class="uso-grid">
+                    <div class="uso-card">
+                        <div class="icono">🦷</div>
+                        <div class="titulo">Nomenclatura</div>
+                        <div class="descripcion">Detecta dientes FDI</div>
+                        <div class="badge-uso">Hover para ver</div>
+                    </div>
+                    <div class="uso-card">
+                        <div class="icono">🔬</div>
+                        <div class="titulo">Diagnóstico</div>
+                        <div class="descripcion">Patologías en color</div>
+                        <div class="badge-uso diagnostico">Cada una con su color</div>
+                    </div>
+                </div>
+                <div style="margin-top:12px; font-size:12px; color:var(--text-light);">
+                    <p><strong>Nomenclatura:</strong> Pasa el mouse sobre la imagen para ver el código FDI.</p>
+                    <p style="margin-top:4px;"><strong>Diagnóstico Unificado:</strong> Cada patología tiene un color único. Al pasar el mouse, verás <strong>[FDI] - [Patología]</strong> con su color.</p>
+                </div>
+            </div>
+            <div class="info-section">
+                <h3><i class="fas fa-play-circle"></i> Instrucciones de Uso</h3>
+                <div class="instruccion-paso">
+                    <span class="numero">1</span>
+                    <span class="texto"><strong>Sube la radiografía:</strong> Haz clic o arrastra una imagen JPG/PNG.</span>
+                </div>
+                <div class="instruccion-paso">
+                    <span class="numero">2</span>
+                    <span class="texto"><strong>Selecciona el modo:</strong> Elige FDI o Diagnóstico Unificado.</span>
+                </div>
+                <div class="instruccion-paso">
+                    <span class="numero">3</span>
+                    <span class="texto"><strong>Analiza la imagen:</strong> Haz clic en procesar radiografía.</span>
+                </div>
+                <div style="margin-top:12px; padding:10px; background:var(--primary-light); border-radius:8px; font-size:12px; color:var(--primary-dark);">
+                    <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> En modo diagnóstico, cada patología tiene un color diferente. Pasa el mouse para ver el detalle.
+                    <br><br>
+                    <div style="color: #d97706; background: rgba(217, 119, 6, 0.1); padding: 8px; border-radius: 6px; border-left: 3px solid #d97706;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Aviso Importante:</strong> Esta herramienta es una Inteligencia Artificial de apoyo y <strong>puede equivocarse o cometer errores</strong>. Todo diagnóstico generado debe ser siempre verificado por un profesional odontólogo capacitado.
+                    </div>
+                </div>
+            </div>
+            <button class="btn-secondary" onclick="showScreen('screen-login')"><i class="fas fa-arrow-left"></i> Volver al Login</button>
+        </div>
+
+        <!-- SOPORTE -->
+        <div id="screen-support" class="screen">
+            <h1><i class="fas fa-headset"></i> Soporte</h1>
+            <p class="subtitle">Centro de ayuda técnica</p>
+            <div class="info-section" style="text-align: center; padding: 24px 16px;">
+                <i class="fas fa-tools" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 12px;"></i>
+                <p><i class="fas fa-envelope"></i> soporte@samaydent.uce.edu.ec</p>
+                <p><i class="fab fa-whatsapp"></i> +593 99 777 8888</p>
+            </div>
+            <button class="btn-secondary" onclick="showScreen('screen-login')"><i class="fas fa-arrow-left"></i> Regresar</button>
+        </div>
+
+        <!-- PERFIL -->
+        <div id="screen-profile" class="screen">
+            <h1><i class="fas fa-user"></i> Mi Perfil</h1>
+            <div class="info-section" style="text-align:center; padding:24px;">
+                <div style="font-size:48px; margin-bottom:12px;">
+                    <i class="fas fa-user-circle" style="color:var(--primary);"></i>
+                </div>
+                <p><strong id="profile-name">Usuario</strong></p>
+                <p style="color:var(--text-light);" id="profile-email">usuario@email.com</p>
+            </div>
+            <button class="btn-secondary" onclick="showScreen('screen-dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+
+        <!-- CAMBIAR CONTRASEÑA -->
+        <div id="screen-change-password" class="screen">
+            <h1><i class="fas fa-key"></i> Cambiar Contraseña</h1>
+            <p class="subtitle">Actualiza tu contraseña de forma segura</p>
+            <input type="password" id="cp-current" placeholder="Contraseña actual">
+            <input type="password" id="cp-new" placeholder="Nueva contraseña (mínimo 6 caracteres)">
+            <input type="password" id="cp-confirm" placeholder="Confirmar nueva contraseña">
+            <div id="cp-feedback" class="password-feedback"></div>
+            <button class="btn-primary" onclick="changePassword()"><i class="fas fa-save"></i> Actualizar Contraseña</button>
+            <button class="btn-secondary" onclick="showScreen('screen-dashboard')"><i class="fas fa-arrow-left"></i> Cancelar</button>
+        </div>
+
+        <!-- HISTORIAL -->
+        <div id="screen-history" class="screen">
+            <h1><i class="fas fa-history"></i> Historial</h1>
+            <p class="subtitle">Últimos diagnósticos</p>
+            <div class="info-section" id="history-list" style="max-height:300px; overflow-y:auto;">
+                <p style="color:var(--text-light); text-align:center;">No hay diagnósticos previos</p>
+            </div>
+            <button class="btn-secondary" onclick="showScreen('screen-dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+
+    </div>
+
+    <div id="toastNotif" class="toast"><i class="fas fa-check-circle"></i> Acción completada.</div>
+    <div id="hover-tooltip" class="hover-tooltip"></div>
+
+    <script>
+    // ============================================================
+    //  LISTA COMPLETA DE PATOLOGÍAS (31 clases)
+    // ============================================================
+    const LISTA_PATOLOGIAS_COMPLETA = [
+        'Caries', 'Corona', 'Obturación', 'Implante', 'Diente mal alineado',
+        'Canal mandibular', 'Diente ausente', 'Lesión periapical', 'Raíz retenida',
+        'Endodoncia', 'Resto radicular', 'Diente impactado', 'Seno maxilar',
+        'Pérdida ósea', 'Fractura dental', 'Diente permanente', 'Supraerupción',
+        'Microtornillo', 'Pilar de implante', 'Atrición', 'Defecto óseo',
+        'Cicatrizal gingival', 'Banda metálica', 'Brackets', 'Retenedor fijo',
+        'Perno muñón', 'Placa de osteosíntesis', 'Alambre de ortodoncia',
+        'Quiste', 'Reabsorción radicular', 'Diente temporal'
+    ];
+
+    // ============================================================
+    //  VARIABLES GLOBALES
+    // ============================================================
+    let uploadedFile = null;
+    let uploadedImageBase64 = null;
+    let currentUser = null;
+    let isProcessing = false;
+    let selectedModel = 'nomenclatura';
+    let isZoomed = false;
+    let canvas = null;
+    let ctx = null;
+    let resizeObserver = null;
+
+    let datosDientes = [];
+    let datosPatologias = [];
+    let patologiasCanvas = [];
+
+    const patologiaColors = {};
+
+    // ============================================================
+    //  FUNCIONES PARA GENERAR COLOR (CORREGIDAS CON HSLA)
+    // ============================================================
+    function getPatologiaColor(nombre) {
+        if (!nombre || nombre.trim() === '') nombre = 'Patología';
+        if (!patologiaColors[nombre]) {
+            let hash = 0;
+            for (let i = 0; i < nombre.length; i++) {
+                hash = nombre.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash % 360);
+            const adjustedHue = (hue >= 340 && hue <= 20) ? 40 : hue;
+            patologiaColors[nombre] = { h: adjustedHue, s: 80, l: 55 };
+        }
+        const c = patologiaColors[nombre];
+        return `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
+    }
+
+    function getPatologiaColorHSLA(nombre, alpha) {
+        if (!nombre || nombre.trim() === '') nombre = 'Patología';
+        if (!patologiaColors[nombre]) {
+            getPatologiaColor(nombre);
+        }
+        const c = patologiaColors[nombre];
+        return `hsla(${c.h}, ${c.s}%, ${c.l}%, ${alpha})`;
+    }
+
+    // ============================================================
+    //  NAVEGACIÓN
+    // ============================================================
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(screenId);
+        if (target) target.classList.add('active');
+        document.getElementById('dropdownMenu').classList.remove('show');
+        if (isZoomed && screenId !== 'screen-results') {
+            const container = document.getElementById('result-container');
+            if (container) {
+                container.classList.remove('zoomed');
+                document.body.style.overflow = '';
+                isZoomed = false;
+            }
+        }
+    }
+
+    function showToast(message, duration = 3000) {
+        var toast = document.getElementById("toastNotif");
+        toast.innerHTML = message;
+        toast.className = "toast show";
+        setTimeout(() => toast.className = toast.className.replace("show", ""), duration);
+    }
+
+    // ============================================================
+    //  CÁLCULO DE COORDENADAS
+    // ============================================================
+    function calcularAreaRealImagen(img) {
+        const container = document.getElementById('result-container');
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        const iw = img.naturalWidth;
+        const ih = img.naturalHeight;
+        if (iw === 0 || ih === 0) return { renderWidth: 0, renderHeight: 0, offsetX: 0, offsetY: 0, ratio: 0 };
+
+        const imgRatio = iw / ih;
+        const containerRatio = cw / ch;
+
+        let renderWidth, renderHeight, offsetX = 0, offsetY = 0;
+
+        if (imgRatio > containerRatio) {
+            renderWidth = cw;
+            renderHeight = cw / imgRatio;
+            offsetY = (ch - renderHeight) / 2;
+        } else {
+            renderHeight = ch;
+            renderWidth = ch * imgRatio;
+            offsetX = (cw - renderWidth) / 2;
+        }
+
+        const ratio = renderWidth / iw;
+        return { renderWidth, renderHeight, offsetX, offsetY, ratio };
+    }
+
+    // ============================================================
+    //  FUNCIONES DE CANVAS Y ZOOM
+    // ============================================================
+    function inicializarCanvas() {
+        canvas = document.getElementById('detection-canvas');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        actualizarCanvas();
+        setupResizeObserver();
+    }
+
+    function actualizarCanvas() {
+        if (!canvas || !ctx) return;
+        const container = document.getElementById('result-container');
+        if (!container) return;
+        const newWidth = container.clientWidth;
+        const newHeight = container.clientHeight;
+        if (canvas.width !== newWidth || canvas.height !== newHeight) {
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+        }
+        dibujarEnCanvas();
+    }
+
+    function toggleZoom() {
+        const container = document.getElementById('result-container');
+        if (!container) return;
+        isZoomed = !isZoomed;
+        if (isZoomed) {
+            container.classList.add('zoomed');
+            document.body.style.overflow = 'hidden';
+        } else {
+            container.classList.remove('zoomed');
+            document.body.style.overflow = '';
+        }
+        const redraw = () => actualizarCanvas();
+        requestAnimationFrame(redraw);
+        requestAnimationFrame(() => setTimeout(redraw, 100));
+        requestAnimationFrame(() => setTimeout(redraw, 300));
+        requestAnimationFrame(() => setTimeout(redraw, 600));
+    }
+
+    function setupResizeObserver() {
+        const container = document.getElementById('result-container');
+        if (!container) return;
+        if (resizeObserver) { resizeObserver.disconnect(); resizeObserver = null; }
+        resizeObserver = new ResizeObserver(() => {
+            if (canvas && document.getElementById('screen-results').classList.contains('active')) {
+                requestAnimationFrame(() => actualizarCanvas());
+            }
+        });
+        resizeObserver.observe(container);
+    }
+
+    // ============================================================
+    //  DIBUJADO DEL CANVAS (CON COLORES CORREGIDOS)
+    // ============================================================
+    function dibujarEnCanvas() {
+        if (!canvas || !ctx) return;
+        const img = document.getElementById('vista-previa');
+        if (!img || img.naturalWidth === 0 || img.naturalHeight === 0) {
+            setTimeout(() => dibujarEnCanvas(), 200);
+            return;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0,0,0,0)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        patologiasCanvas = [];
+
+        if (selectedModel === 'nomenclatura') {
+            const debugCounter = document.getElementById('debugCounter');
+            if (debugCounter) debugCounter.classList.remove('visible');
+            configurarEventosCanvas();
+            return;
+        }
+
+        const { renderWidth, renderHeight, offsetX, offsetY, ratio } = calcularAreaRealImagen(img);
+        if (ratio === 0) {
+            setTimeout(() => dibujarEnCanvas(), 200);
+            return;
+        }
+
+        datosPatologias.forEach((pat, index) => {
+            const [x1, y1, x2, y2] = pat.box;
+            const left = (x1 * ratio) + offsetX;
+            const top = (y1 * ratio) + offsetY;
+            const width = (x2 - x1) * ratio;
+            const height = (y2 - y1) * ratio;
+            if (width < 1 || height < 1) return;
+            const detection = { index, x: left, y: top, w: width, h: height, data: pat };
+            patologiasCanvas.push(detection);
+            dibujarPatologia(detection);
+        });
+
+        const debugCounter = document.getElementById('debugCounter');
+        const countPatologias = document.getElementById('countPatologias');
+        if (debugCounter) {
+            debugCounter.classList.add('visible');
+            countPatologias.textContent = datosPatologias.length;
+        }
+        configurarEventosCanvas();
+    }
+
+    function dibujarPatologia(detection) {
+        if (!ctx) return;
+        const x = detection.x, y = detection.y, w = detection.w, h = detection.h;
+        const patName = detection.data.nombre_traducido || 'Patología';
+
+        ctx.save();
+        ctx.shadowColor = getPatologiaColorHSLA(patName, 0.4);
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = getPatologiaColorHSLA(patName, 0.2);
+        ctx.fillRect(x, y, w, h);
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = getPatologiaColor(patName);
+        ctx.lineWidth = 2.5;
+        ctx.strokeRect(x, y, w, h);
+        ctx.restore();
+
+        const cornerSize = Math.min(6, w * 0.06, h * 0.06);
+        ctx.strokeStyle = getPatologiaColor(patName);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, y + cornerSize); ctx.lineTo(x, y); ctx.lineTo(x + cornerSize, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + w - cornerSize, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + cornerSize);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x, y + h - cornerSize); ctx.lineTo(x, y + h); ctx.lineTo(x + cornerSize, y + h);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x + w - cornerSize, y + h); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w, y + h - cornerSize);
+        ctx.stroke();
+    }
+
+    // ============================================================
+    //  EVENTOS DEL CANVAS (HOVER)
+    // ============================================================
+    function configurarEventosCanvas() {
+        if (!canvas) return;
+        canvas.onmousemove = null;
+        canvas.onmouseleave = null;
+
+        const tooltip = document.getElementById('hover-tooltip');
+
+        canvas.onmousemove = function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            if (selectedModel === 'nomenclatura') {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(0,0,0,0)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const img = document.getElementById('vista-previa');
+                const { renderWidth, renderHeight, offsetX, offsetY, ratio } = calcularAreaRealImagen(img);
+                let encontrado = false;
+
+                datosDientes.forEach((diente) => {
+                    const [x1, y1, x2, y2] = diente.box;
+                    const x = (x1 * ratio) + offsetX;
+                    const y = (y1 * ratio) + offsetY;
+                    const w = (x2 - x1) * ratio;
+                    const h = (y2 - y1) * ratio;
+                    const isHover = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
+
+                    if (isHover) {
+                        encontrado = true;
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0, 255, 136, 0.5)';
+                        ctx.shadowBlur = 25;
+                        ctx.strokeStyle = '#00FF88';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x, y, w, h);
+                        ctx.restore();
+                        ctx.fillStyle = 'rgba(0, 255, 136, 0.08)';
+                        ctx.fillRect(x, y, w, h);
+
+                        tooltip.innerHTML = `<span class="fdi-code">${diente.codigo}</span>`;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = (e.clientX + 15) + 'px';
+                        tooltip.style.top = (e.clientY - 30) + 'px';
+                        resaltarEnLista(diente.codigo);
+                    }
+                });
+
+                if (!encontrado) {
+                    tooltip.style.display = 'none';
+                    quitarResaltadoLista();
+                }
+
+            } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(0,0,0,0)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                patologiasCanvas.forEach(det => dibujarPatologia(det));
+                let encontrado = false;
+
+                patologiasCanvas.forEach((det) => {
+                    const x = det.x, y = det.y, w = det.w, h = det.h, pat = det.data;
+                    const isHover = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
+
+                    if (isHover) {
+                        encontrado = true;
+                        const patName = pat.nombre_traducido || 'Patología';
+                        const color = getPatologiaColor(patName);
+                        ctx.save();
+                        ctx.shadowColor = getPatologiaColorHSLA(patName, 0.6);
+                        ctx.shadowBlur = 30;
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(x, y, w, h);
+                        ctx.restore();
+
+                        const fdiText = pat.codigo_fdi;
+                        const patText = pat.nombre_traducido || 'Patología';
+                        
+                        let tooltipText = fdiText 
+                            ? `<span class="fdi-code">Pieza ${fdiText}</span> - <span class="patologia-name" style="color:${color};">${patText}</span>`
+                            : `<span class="patologia-name" style="color:${color};">${patText}</span>`;
+                        
+                        tooltip.innerHTML = tooltipText;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = (e.clientX + 15) + 'px';
+                        tooltip.style.top = (e.clientY - 30) + 'px';
+                        resaltarEnLista(fdiText || patText, color);
+                    }
+                });
+
+                if (!encontrado) {
+                    tooltip.style.display = 'none';
+                    quitarResaltadoLista();
+                }
+            }
+        };
+
+        canvas.onmouseleave = function() {
+            tooltip.style.display = 'none';
+            quitarResaltadoLista();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0,0,0,0)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            if (selectedModel === 'unificado') {
+                patologiasCanvas.forEach(det => dibujarPatologia(det));
+            }
+        };
+    }
+
+    function resaltarEnLista(codigo, color = null) {
+        document.querySelectorAll('#resultados-lista .detalle-item').forEach(item => {
+            const span = item.querySelector('strong');
+            if (span) {
+                const text = span.textContent;
+                if (text.includes(codigo)) {
+                    item.classList.add('highlight-item');
+                    const nameSpan = item.querySelector('.patologia-name-colored');
+                    if (nameSpan && color) {
+                        nameSpan.style.color = color;
+                    }
+                } else {
+                    item.classList.remove('highlight-item');
+                }
+            }
+        });
+    }
+
+    function quitarResaltadoLista() {
+        document.querySelectorAll('#resultados-lista .detalle-item').forEach(item => {
+            item.classList.remove('highlight-item');
+        });
+    }
+
+    // ============================================================
+    //  RESTO DE FUNCIONES (UI Y BACKEND)
+    // ============================================================
+    function selectModel(model) {
+        selectedModel = model;
+        document.querySelectorAll('.model-selector button').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.model === model) btn.classList.add('active');
+        });
+        updateDebug(`Modelo seleccionado: ${model === 'nomenclatura' ? 'Nomenclatura FDI' : 'Diagnóstico Unificado'}`);
+        if (document.getElementById('screen-results').classList.contains('active')) {
+            actualizarCanvas();
+        }
+    }
+
+    function toggleMenu() { document.getElementById('dropdownMenu').classList.toggle('show'); }
+    document.addEventListener('click', function(event) {
+        const menu = document.querySelector('.user-menu');
+        if (menu && !menu.contains(event.target)) document.getElementById('dropdownMenu').classList.remove('show');
+    });
+
+    // ============================================================
+    //  LOGIN
+    // ============================================================
+    async function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        if (!email || !password) { showToast("Ingresa correo y contraseña"); return; }
+        try {
+            const response = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                const displayName = currentUser.name || currentUser.email.split('@')[0];
+                const avatarLetter = displayName.charAt(0).toUpperCase();
+                document.getElementById('user-avatar').textContent = avatarLetter;
+                document.getElementById('user-name-display').textContent = displayName;
+                document.getElementById('user-email-display').textContent = currentUser.email;
+                document.getElementById('profile-name').textContent = displayName;
+                document.getElementById('profile-email').textContent = currentUser.email;
+                showToast("✅ Bienvenido " + displayName);
+                showScreen('screen-dashboard');
+                loadHistory();
+            } else showToast("❌ " + data.error);
+        } catch (error) { showToast("❌ Error de conexión"); }
+    }
+
+    // ============================================================
+    //  REGISTRO (con confirmación y validación de 6 caracteres)
+    // ============================================================
+    async function register() {
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+        const confirm = document.getElementById('reg-confirm-password').value;
+
+        if (!name || !email || !password || !confirm) {
+            showToast("Completa todos los campos");
+            return;
+        }
+        if (password.length < 6) {
+            showToast("La contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+        if (password !== confirm) {
+            showToast("Las contraseñas no coinciden");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, confirm })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast("✅ Registro exitoso. ¡Inicia sesión!");
+                showScreen('screen-login');
+            } else {
+                showToast("❌ " + data.error);
+            }
+        } catch (error) {
+            showToast("❌ Error de conexión");
+        }
+    }
+
+    // ============================================================
+    //  CAMBIAR CONTRASEÑA
+    // ============================================================
+    async function changePassword() {
+        const current = document.getElementById('cp-current').value;
+        const newPass = document.getElementById('cp-new').value;
+        const confirm = document.getElementById('cp-confirm').value;
+
+        if (!current || !newPass || !confirm) {
+            showToast("Completa todos los campos");
+            return;
+        }
+        if (newPass.length < 6) {
+            showToast("La nueva contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+        if (newPass !== confirm) {
+            showToast("Las contraseñas no coinciden");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ current, new: newPass, confirm })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast("✅ Contraseña actualizada correctamente");
+                // Limpiar campos
+                document.getElementById('cp-current').value = '';
+                document.getElementById('cp-new').value = '';
+                document.getElementById('cp-confirm').value = '';
+                showScreen('screen-dashboard');
+            } else {
+                showToast("❌ " + data.error);
+            }
+        } catch (error) {
+            showToast("❌ Error de conexión");
+        }
+    }
+
+    // ============================================================
+    //  LOGOUT
+    // ============================================================
+    async function logout() {
+        try {
+            await fetch('/api/logout', { method: 'POST' });
+            currentUser = null;
+            document.getElementById('dropdownMenu').classList.remove('show');
+            showToast("👋 Sesión cerrada");
+            showScreen('screen-login');
+        } catch (error) {}
+    }
+
+    // ============================================================
+    //  MANEJO DE ARCHIVOS
+    // ============================================================
+    function processFile(file) {
+        if (file && file.type.startsWith('image/')) {
+            uploadedFile = file;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                uploadedImageBase64 = event.target.result;
+                document.getElementById('upload-icon').className = "fas fa-image";
+                document.getElementById('upload-icon').style.color = "#E84A68";
+                document.getElementById('upload-text').innerHTML = `📷 ${file.name}`;
+                updateDebug(`Imagen cargada: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.getElementById('file-upload').addEventListener('change', function(e) { if (e.target.files.length > 0) processFile(e.target.files[0]); });
+    const dropZone = document.getElementById('drop-container');
+    dropZone.addEventListener('click', () => document.getElementById('file-upload').click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.backgroundColor = "var(--primary-light)"; });
+    dropZone.addEventListener('dragleave', () => { dropZone.style.backgroundColor = "var(--bg-color)"; });
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.style.backgroundColor = "var(--bg-color)"; if (e.dataTransfer.files.length > 0) processFile(e.dataTransfer.files[0]); });
+
+    function updateDebug(message) {
+        const debugEl = document.getElementById('debugContent');
+        if (debugEl) { debugEl.textContent = message; document.getElementById('debugLog').classList.add('visible'); }
+    }
+
+    function updateDebugScan(message) {
+        const debugEl = document.getElementById('debugContentScan');
+        if (debugEl) { debugEl.textContent = message; document.getElementById('debugLogScan').classList.add('visible'); }
+    }
+
+    // ============================================================
+    //  ANÁLISIS
+    // ============================================================
+    async function startAnalysis() {
+        if (isProcessing) { showToast("⏳ Análisis en curso...", 2000); return; }
+        if (!uploadedFile) { showToast("📤 Sube una radiografía primero.", 2500); return; }
+        if (!currentUser) { showToast("🔐 Inicia sesión primero.", 2500); return; }
+
+        isProcessing = true;
+        try {
+            document.getElementById('demo-img-scan').src = uploadedImageBase64;
+            showScreen('screen-scan');
+            const textoEscaneo = document.getElementById('texto-escaneo');
+            updateDebugScan(`📤 Enviando imagen... (Modelo: ${selectedModel === 'nomenclatura' ? 'Nomenclatura FDI' : 'Diagnóstico Unificado'})`);
+            textoEscaneo.innerHTML = `<i class="fas fa-upload fa-spin"></i> Enviando imagen al servidor...`;
+
+            const response = await fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: uploadedImageBase64, model_type: selectedModel })
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || "Error procesando la imagen");
+
+            updateDebugScan("✅ Análisis completado");
+            textoEscaneo.innerHTML = "<i class='fas fa-check-circle'></i> ¡Listo!";
+            showScreen('screen-results');
+            
+            const tag = document.getElementById('result-model-tag');
+            if (selectedModel === 'nomenclatura') {
+                tag.textContent = 'Nomenclatura FDI';
+                tag.style.background = '#e6f7f9'; tag.style.color = '#007b85';
+            } else {
+                tag.textContent = 'Diagnóstico Unificado';
+                tag.style.background = '#fce8ee'; tag.style.color = '#c42e4b';
+            }
+            
+            const imgPrevia = document.getElementById('vista-previa');
+            imgPrevia.src = "data:image/jpeg;base64," + data.imagen_original;
+            
+            datosDientes = data.dientes || [];
+            datosPatologias = data.patologias || [];
+
+            imgPrevia.onload = function() {
+                inicializarCanvas();
+                setTimeout(actualizarCanvas, 50);
+            };
+            if (imgPrevia.complete && imgPrevia.naturalWidth > 0) imgPrevia.onload();
+
+            const lista = document.getElementById('resultados-lista');
+            const totalEl = document.getElementById('total-detectados');
+
+            if (selectedModel === 'nomenclatura') {
+                if (datosDientes.length > 0) {
+                    let html = '';
+                    datosDientes.forEach(d => {
+                        const nombreDiente = d.nombre || 'Diente';
+                        html += `<div class="detalle-item"><span><strong>${d.codigo}</strong> (${nombreDiente})</span><span class="badge">Diente</span></div>`;
+                    });
+                    lista.innerHTML = html;
+                    totalEl.textContent = `Total: ${datosDientes.length} dientes`;
+                } else {
+                    lista.innerHTML = '<p style="color: var(--text-light);">No se detectaron dientes</p>';
+                    totalEl.textContent = '';
+                }
+            } else {
+                const hallazgos = data.hallazgos || [];
+                if (hallazgos.length > 0) {
+                    let html = '';
+                    hallazgos.forEach(hallazgo => {
+                        const fdi = hallazgo.fdi;
+                        const pats = hallazgo.patologias || [];
+                        const nombreDiente = hallazgo.nombre || 'Diente';
+                        if (hallazgo.tipo === 'diente') {
+                            const patsColored = pats.map(p => {
+                                const color = getPatologiaColor(p);
+                                return `<span class="patologia-name-colored" style="color:${color}; font-weight:600;">${p}</span>`;
+                            }).join(', ');
+                            html += `<div class="detalle-item" style="color: var(--accent);">
+                                <span><strong style="color: var(--accent);">Pieza ${fdi} (${nombreDiente}):</strong> ${patsColored}</span>
+                                <span class="badge badge-patologia">Patología</span>
+                            </div>`;
+                        } else {
+                            const color = getPatologiaColor(hallazgo.texto);
+                            html += `<div class="detalle-item" style="color: var(--accent);">
+                                <span><strong style="color: var(--accent);">🌍</strong> <span class="patologia-name-colored" style="color:${color}; font-weight:600;">${hallazgo.texto}</span></span>
+                                <span class="badge badge-patologia">Global</span>
+                            </div>`;
+                        }
+                    });
+                    lista.innerHTML = html;
+                    totalEl.textContent = `Total: ${hallazgos.length} hallazgos | ${datosDientes.length} dientes`;
+                } else {
+                    lista.innerHTML = '<p style="color: var(--text-light);">No se detectaron patologías</p>';
+                    totalEl.textContent = `Total: ${datosDientes.length} dientes sanos`;
+                }
+            }
+            showToast("✅ Diagnóstico completado", 2500);
+            loadHistory(); 
+
+        } catch (error) {
+            updateDebugScan("❌ Error: " + error.message);
+            document.getElementById('texto-escaneo').innerHTML = `<span style="color:var(--accent);">❌ Error: ${error.message}</span>`;
+            showToast("❌ Error al procesar la imagen", 3500);
+        } finally {
+            isProcessing = false;
+        }
+    }
+
+    // ============================================================
+    //  HISTORIAL
+    // ============================================================
+    async function loadHistory() {
+        try {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+            const list = document.getElementById('history-list');
+            if (data.success && data.history && data.history.length > 0) {
+                let html = '';
+                data.history.forEach(item => {
+                    const fecha = new Date(item.created_at).toLocaleDateString();
+                    const patologias = item.result_data.patologias || [];
+                    const modeloNombre = item.model_used === 'nomenclatura' ? 'Nomenclatura FDI' : 'Diagnóstico Unificado';
+                    html += `
+                        <div style="padding:8px 0; border-bottom:1px solid var(--border-color);">
+                            <div style="font-weight:500; font-size:13px;">${modeloNombre}</div>
+                            <div style="font-size:12px; color:var(--text-light);">🔴 ${patologias.length} patologías</div>
+                            <div style="font-size:11px; color:var(--text-light);">${fecha}</div>
+                        </div>`;
+                });
+                list.innerHTML = html;
+            } else list.innerHTML = '<p style="color:var(--text-light); text-align:center;">No hay diagnósticos previos</p>';
+        } catch (error) {}
+    }
+
+    // ============================================================
+    //  SESSION
+    // ============================================================
+    async function checkSession() {
+        try {
+            const response = await fetch('/api/current-user');
+            const data = await response.json();
+            if (data.success) {
+                currentUser = data.user;
+                const displayName = currentUser.name || currentUser.email.split('@')[0];
+                const avatarLetter = displayName.charAt(0).toUpperCase();
+                document.getElementById('user-avatar').textContent = avatarLetter;
+                document.getElementById('user-name-display').textContent = displayName;
+                document.getElementById('user-email-display').textContent = currentUser.email;
+                document.getElementById('profile-name').textContent = displayName;
+                document.getElementById('profile-email').textContent = currentUser.email;
+                showScreen('screen-dashboard');
+                loadHistory();
+            }
+        } catch (error) {}
+    }
+
+    // ============================================================
+    //  MOSTRAR TODAS LAS PATOLOGÍAS CON SUS COLORES
+    // ============================================================
+    function mostrarMuestraColores() {
+        const lista = document.getElementById('color-sample-list');
+        if (!lista) return;
+        let html = '';
+        LISTA_PATOLOGIAS_COMPLETA.forEach(p => {
+            const color = getPatologiaColor(p);
+            html += `<span class="color-item">
+                        <span class="color-swatch" style="background:${color};"></span>
+                        ${p}
+                    </span>`;
+        });
+        lista.innerHTML = html;
+    }
+
+    // ============================================================
+    //  VALIDACIÓN DE CONTRASEÑA EN REGISTRO (feedback en tiempo real)
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        mostrarMuestraColores();
+
+        // Feedback de contraseña en registro
+        const regPass = document.getElementById('reg-password');
+        const regConfirm = document.getElementById('reg-confirm-password');
+        const feedback = document.getElementById('reg-password-feedback');
+
+        function validatePassword() {
+            const pass = regPass.value;
+            const confirm = regConfirm.value;
+            if (pass.length === 0 && confirm.length === 0) {
+                feedback.textContent = '';
+                feedback.className = 'password-feedback';
+                return;
+            }
+            if (pass.length < 6) {
+                feedback.textContent = '⚠️ La contraseña debe tener al menos 6 caracteres.';
+                feedback.className = 'password-feedback invalid';
+                return;
+            }
+            if (confirm.length > 0 && pass !== confirm) {
+                feedback.textContent = '❌ Las contraseñas no coinciden.';
+                feedback.className = 'password-feedback invalid';
+                return;
+            }
+            if (pass === confirm && pass.length >= 6) {
+                feedback.textContent = '✅ Contraseña válida.';
+                feedback.className = 'password-feedback valid';
+            } else {
+                feedback.textContent = '';
+                feedback.className = 'password-feedback';
+            }
+        }
+
+        regPass.addEventListener('input', validatePassword);
+        regConfirm.addEventListener('input', validatePassword);
+    });
+
+    checkSession();
+    </script>
+</body>
+</html>
