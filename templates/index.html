@@ -1035,18 +1035,50 @@
     }
 
     // ============================================================
-    //  MANEJO DE ARCHIVOS
+    //  MANEJO DE ARCHIVOS Y COMPRESIÓN PARA CELULARES
     // ============================================================
     function processFile(file) {
         if (file && file.type.startsWith('image/')) {
             uploadedFile = file;
             const reader = new FileReader();
             reader.onload = function(event) {
-                uploadedImageBase64 = event.target.result;
-                document.getElementById('upload-icon').className = "fas fa-image";
-                document.getElementById('upload-icon').style.color = "#E84A68";
-                document.getElementById('upload-text').innerHTML = `📷 ${file.name}`;
-                updateDebug(`Imagen cargada: ${file.name} (${(file.size/1024).toFixed(1)} KB)`);
+                // Crear una imagen temporal en memoria para comprimirla
+                const img = new Image();
+                img.onload = function() {
+                    const canvasCompresion = document.createElement('canvas');
+                    // 1200px es un tamaño excelente y ligero para los modelos YOLO
+                    const MAX_WIDTH = 1200; 
+                    const MAX_HEIGHT = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calcular la nueva escala manteniendo la proporción
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvasCompresion.width = width;
+                    canvasCompresion.height = height;
+                    const ctxCompresion = canvasCompresion.getContext('2d');
+                    ctxCompresion.drawImage(img, 0, 0, width, height);
+
+                    // Convertir la imagen comprimida a Base64 (0.8 = 80% de calidad, súper ligero)
+                    uploadedImageBase64 = canvasCompresion.toDataURL('image/jpeg', 0.8);
+                    
+                    document.getElementById('upload-icon').className = "fas fa-image";
+                    document.getElementById('upload-icon').style.color = "#E84A68";
+                    document.getElementById('upload-text').innerHTML = `📷 ${file.name} (Optimizada)`;
+                    updateDebug(`Imagen cargada y comprimida para el servidor`);
+                };
+                img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         }
