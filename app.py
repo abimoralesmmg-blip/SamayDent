@@ -77,7 +77,7 @@ def load_models():
     for name, filename in model_files.items():
         path = os.path.join(BASE_DIR, 'models', filename)
         if os.path.exists(path):
-            MODELS[name] = YOLO(path, task='detect')
+            MODELS[name] = YOLO(path)
             print(f"✅ Modelo '{name}' cargado desde {path}")
         else:
             print(f"⚠️ Modelo '{name}' NO encontrado en {path}")
@@ -200,22 +200,13 @@ def procesar_unificado(image_data):
         img_bytes = base64.b64decode(image_data)
         img_pil = Image.open(io.BytesIO(img_bytes)).convert("RGB")
         img_array = np.array(img_pil)
-        # Redimensionar a máximo 640px (YOLO trabaja mejor y gasta menos RAM)
-        MAX_SIZE = 640
         h, w = img_array.shape[:2]
-        if h > MAX_SIZE or w > MAX_SIZE:
-            scale = MAX_SIZE / max(h, w)
-            new_w = int(w * scale)
-            new_h = int(h * scale)
-            img_array = cv2.resize(img_array, (new_w, new_h), interpolation=cv2.INTER_AREA)
-            h, w = img_array.shape[:2]  # actualizar dimensiones
 
         # 1. DETECCIÓN DE DIENTES
         dientes = []
         model_d = MODELS.get('nomenclatura')
         if model_d:
-            res = model_d.predict(img_array, conf=0.35, verbose=False, device='cpu')[0]
-            res_p = model_p.predict(img_array, conf=0.20, iou=0.4, augment=True, verbose=False, device='cpu')[0]
+            res = model_d.predict(img_array, conf=0.35, verbose=False)[0]
             for box in res.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 clase_id = int(box.cls[0])
