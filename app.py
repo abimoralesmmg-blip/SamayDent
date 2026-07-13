@@ -24,21 +24,15 @@ app.config['SECRET_KEY'] = 'samaydent-secret-key-2026'
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# ---------- CONFIGURACIÓN DE BASE DE DATOS ----------
-# Si existe la variable de entorno DATABASE_URL (en Railway), usamos PostgreSQL
-# Si no, usamos SQLite local (para desarrollo)
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # Railway proporciona DATABASE_URL con 'postgres://', pero SQLAlchemy requiere 'postgresql://'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url.replace("postgres://", "postgresql://", 1)
 else:
-    # Modo local: creamos la carpeta database si no existe
     os.makedirs(os.path.join(BASE_DIR, 'database'), exist_ok=True)
     DB_PATH = os.path.join(BASE_DIR, "database", "samaydent.db")
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_PATH}'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# -----------------------------------------------------
 
 CORS(app)
 db = SQLAlchemy(app)
@@ -113,7 +107,6 @@ def load_user(user_id):
 # 5. MIGRACIÓN DE COLUMNA 'name'
 # ============================================================
 def migrar_base_datos():
-    # Solo ejecutar en modo SQLite (local)
     if not os.environ.get('DATABASE_URL'):
         import sqlite3
         conn = sqlite3.connect(DB_PATH)
@@ -125,8 +118,9 @@ def migrar_base_datos():
             conn.commit()
             print("✅ Columna 'name' añadida a la tabla user.")
         conn.close()
+
 # ============================================================
-# 6. CORRECCIÓN DE CUADRANTES (solo primer dígito)
+# 6. CORRECCIÓN DE CUADRANTES
 # ============================================================
 def corregir_cuadrantes_por_posicion(dientes, img_width, img_height):
     if not dientes:
@@ -172,7 +166,7 @@ def corregir_cuadrantes_por_posicion(dientes, img_width, img_height):
     return dientes
 
 # ============================================================
-# 7. ASIGNAR NOMBRE AL DIENTE (basado en el número, sin modificar)
+# 7. ASIGNAR NOMBRE AL DIENTE
 # ============================================================
 def asignar_nombres_dientes(dientes):
     for d in dientes:
@@ -188,7 +182,94 @@ def asignar_nombres_dientes(dientes):
     return dientes
 
 # ============================================================
-# 8. PROCESAMIENTO DE IMÁGENES
+# 8. HEURÍSTICA PARA DETECTAR QUIETES (APICAL)
+# ============================================================
+def es_probable_quiste(box_patologia, dientes, img_height):
+    """
+    Determina si una lesión periapical está en la zona apical de un diente.
+    Devuelve True si es probablemente un quiste, False si es periapical.
+    """
+    if not dientes:
+        return False
+
+    # Centro de la lesión
+    cx = (box_patologia[0] + box_patologia[2]) / 2
+    cy = (box_patologia[1] + box_patologia[3]) / 2
+
+    # Buscar el diente más cercano (por distancia al centro)
+    mejor_distancia = float('inf')
+    mejor_diente = None
+    for d in dientes:
+        dx = (d['box'][0] + d['box'][2]) / 2
+        dy = (d['box'][1] + d['box'][3]) / 2
+        dist = ((cx - dx)**2 + (cy - dy)**2)**0.5
+        if dist < mejor_distancia:
+            mejor_distancia = dist
+            mejor_diente = d
+
+    if not mejor_diente:
+        return False
+
+    # El diente tiene su borde inferior (raíz) en el lado apical
+    # Si la lesión está por debajo de la mitad inferior del diente, es apical
+    diente_y_superior = mejor_diente['box'][1]
+    diente_y_inferior = mejor_diente['box'][3]
+    diente_centro_y = (diente_y_superior + diente_y_inferior) / 2
+
+    # La lesión está cerca del borde inferior (apical) del diente
+    # Umbral: si el centro de la lesión está en el 30% inferior del diente
+    umbral_apical = diente_y_superior + 0.7 * (diente_y_inferior - diente_y_superior)
+    if cy >= umbral_apical:
+        return True
+    return False
+
+# ============================================================
+# 9. NORMALIZACIÓN DE PATOLOGÍAS + HEURÍSTICA
+# ============================================================
+def normalizar_nombre_patologia(nombre, box_patologia, dientes, img_height):
+    """Devuelve el nombre final de la patología, aplicando heurística para quistes."""
+    if not nombre:
+        return 'Patología'
+
+    clave = nombre.lower().strip()
+    # Si es "lesión periapical" o similar, evaluar si es quiste
+    if 'periapical' in clave or 'lesión periapical' in clave:
+        if es_probable_quiste(box_patologia, dientes, img_height):
+            return 'Quiste'  # Lo mostramos como quiste
+        else:
+            return 'Lesión periapical'
+    
+    # Para otras patologías, usar el diccionario
+    NORMALIZAR_PATOLOGIA = {
+        'quiste': 'Quiste',
+        'quiste dentígero': 'Quiste Dentígero',
+        'cyst': 'Quiste',
+        'caries': 'Caries',
+        'cavity': 'Caries',
+        'fractura': 'Fractura',
+        'fracture': 'Fractura',
+        'corona': 'Corona',
+        'crown': 'Corona',
+        'obturación': 'Obturación',
+        'filling': 'Obturación',
+        'implante': 'Implante',
+        'implant': 'Implante',
+        'endodoncia': 'Endodoncia',
+        'root canal': 'Endodoncia',
+        'diente impactado': 'Diente impactado',
+        'impacted tooth': 'Diente impactado',
+        'pérdida ósea': 'Pérdida Ósea',
+        'bone loss': 'Pérdida Ósea',
+    }
+    if clave in NORMALIZAR_PATOLOGIA:
+        return NORMALIZAR_PATOLOGIA[clave]
+    for k, v in NORMALIZAR_PATOLOGIA.items():
+        if k in clave or clave in k:
+            return v
+    return nombre.title()
+
+# ============================================================
+# 10. PROCESAMIENTO DE IMÁGENES
 # ============================================================
 def extraer_codigo_fdi(clase_id):
     return MAPEO_FDI_POR_ID.get(clase_id, str(clase_id))
@@ -216,23 +297,28 @@ def procesar_unificado(image_data):
                     'clase_id': clase_id
                 })
 
-        # 2. CORREGIR CUADRANTES (solo primer dígito)
+        # 2. CORREGIR CUADRANTES
         dientes = corregir_cuadrantes_por_posicion(dientes, w, h)
 
-        # 3. ASIGNAR NOMBRES (basados en el número del diente, que no se modifica)
+        # 3. ASIGNAR NOMBRES A LOS DIENTES
         dientes = asignar_nombres_dientes(dientes)
 
-        # 4. DETECCIÓN DE PATOLOGÍAS
+        # 4. DETECCIÓN DE PATOLOGÍAS CON UMBRAL REDUCIDO
         patologias = []
         model_p = MODELS.get('patologias')
         if model_p:
-            res_p = model_p.predict(img_array, conf=0.20, iou=0.4, augment=True, verbose=False)[0]
+            res_p = model_p.predict(img_array, conf=0.15, iou=0.4, augment=True, verbose=False)[0]
             for box in res_p.boxes:
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 clase_id = int(box.cls[0])
-                nombre = model_p.names[clase_id]
-                if not nombre or nombre.strip() == '':
-                    nombre = 'Patología'
+                nombre_original = model_p.names[clase_id]
+                # Aplicar normalización con heurística para quistes
+                nombre_final = normalizar_nombre_patologia(
+                    nombre_original, 
+                    [x1, y1, x2, y2], 
+                    dientes, 
+                    h
+                )
                 fdi = None
                 cx, cy = (x1+x2)/2, (y1+y2)/2
                 for d in dientes:
@@ -240,7 +326,7 @@ def procesar_unificado(image_data):
                         fdi = d['codigo']
                         break
                 patologias.append({
-                    'nombre_traducido': nombre,
+                    'nombre_traducido': nombre_final,
                     'box': [x1, y1, x2, y2],
                     'codigo_fdi': fdi,
                     'clase_id': clase_id
@@ -284,7 +370,7 @@ def procesar_unificado(image_data):
         return None
 
 # ============================================================
-# 9. RUTAS
+# 11. RUTAS (Sin cambios)
 # ============================================================
 @app.route('/')
 def index():
@@ -420,11 +506,9 @@ def get_history():
         } for h in historial]
     })
 
-
 # ============================================================
-# 10. INICIALIZACIÓN GLOBAL (Para producción y local)
+# 12. INICIALIZACIÓN
 # ============================================================
-# Al estar fuera del 'if __name__', Gunicorn sí ejecutará esto al arrancar
 with app.app_context():
     db.create_all()
     migrar_base_datos()
@@ -433,7 +517,7 @@ load_models()
 
 if __name__ == '__main__':
     print("="*50)
-    print("🦷 SamayDent IA - Servidor v12.18 (Modelos en Producción)")
+    print("🦷 SamayDent IA - Servidor v12.20 (Heurística de quistes)")
     print("🌐 http://127.0.0.1:5000")
     print("="*50)
     app.run(debug=True, host='0.0.0.0', port=5000)
